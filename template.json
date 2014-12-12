@@ -1,0 +1,98 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "CloudConductor pattern template",
+
+  "Parameters" : {
+    "KeyName" : {
+      "Description" : "Name of an existing EC2/OpenStack KeyPair to enable SSH access to the instances",
+      "Type" : "String",
+      "MinLength" : "1",
+      "MaxLength" : "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+    "optionalInstanceType" : {
+      "Description" : "OptionalServer instance type",
+      "Type" : "String",
+      "Default" : "t2.small"
+    },
+    "optioanlImageId" : {
+      "Description" : "[computed] OptionalServer Image Id. This parameter is automatically filled by CloudConductor.",
+      "Type" : "String"
+    },
+    "VpcId" : {
+      "Description" : "[computed] The Vpc Id which is used by platform pattern.",
+      "Type" : "String"
+    },
+    "SubnetId" : {
+      "Description" : "[computed] The Subnet Id which is used by platform pattern.",
+      "Type" : "String"
+    }
+  },
+
+  "Mappings" : {
+  },
+
+  "Resources" : {
+
+    "OptionalServer" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : { "Ref" : "optioanlImageId" },
+        "InstanceType" : { "Ref" : "optionalInstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [{
+           "DeviceIndex" : "0",
+           "NetworkInterfaceId" : { "Ref" : "OptionalNetworkInterface" }
+        }],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/sh -v\n",
+          "mkdir -p /var/log/optional\n",
+          "touch /var/log/optional/optional.log\n",
+          "echo '#!/bin/sh' >> /tmp/crontab\n",
+          "echo '*/1 * * * * echo `date` >> /var/log/optional/optional.log' >> /tmp/crontab\n",
+          "crontab /tmp/crontab\n",
+          "exit 1\n"
+        ]]}},
+        "Tags" : [{"Key": "Name", "Value": "OptionalServer"}]
+      }
+    },
+    "OptionalNetworkInterface" : {
+      "Type" : "AWS::EC2::NetworkInterface",
+      "Properties" : {
+        "GroupSet" : [{"Ref" : "OptionalSecurityGroup"}],
+        "SubnetId" : { "Ref" : "SubnetId" }
+      }
+    },
+    "FrontendEIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+    "EIPAssociation" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : [ "FrontendEIP", "AllocationId" ]},
+        "NetworkInterfaceId" : { "Ref" : "OptionalNetworkInterface" }
+      }
+    },
+    "OptionalSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP access via port 80, Zabbix-agent access",
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    }
+  },
+  "Outputs" : {
+    "FrontendAddress" : {
+      "Value" : { "Ref" : "FrontendEIP" },
+      "Description" : "Frontend DNS name or IP address to access serf rpc port from CloudConductor server. This output is required."
+    }
+  }
+}
