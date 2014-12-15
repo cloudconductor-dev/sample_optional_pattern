@@ -7,4 +7,4 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe 'zabbix_part::setup'
+include_recipe 'optional_part::setup'

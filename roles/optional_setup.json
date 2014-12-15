@@ -1,0 +1,9 @@
+{
+  "name": "optional_setup",
+  "description": "Setups optional server",
+  "chef_type": "role",
+  "json_class":"Chef::Role",
+  "run_list": [
+    "recipe[optional_part::setup]"
+  ]
+}

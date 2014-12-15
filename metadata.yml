@@ -1,13 +1,13 @@
-name:             "zabbix_pattern"
+name:             "optional_pattern"
 maintainer:       "TIS Inc."
 maintainer_email: "ccndctr@gmail.com"
 license:          "Apache v2.0"
 description:      "CloudConductor optional pattern for Zabbix"
 version:          "0.0.1"
-url:              "https://github.com/cloudconductor-patterns/zabbix_pattern"
+url:              "https://github.com/KondaTomoyuki/optional_pattern.git"
 
 type:      "optional"
-depends:   [zabbix]
+depends:   [optional]
 conflicts: []
 
 supports:
