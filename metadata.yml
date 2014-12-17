@@ -2,9 +2,9 @@ name:             "optional_pattern"
 maintainer:       "TIS Inc."
 maintainer_email: "ccndctr@gmail.com"
 license:          "Apache v2.0"
-description:      "CloudConductor optional pattern for Zabbix"
+description:      "CloudConductor sample optional pattern"
 version:          "0.0.1"
-url:              "https://github.com/KondaTomoyuki/optional_pattern.git"
+url:              "https://github.com/cloudconductor-dev/sample_optional_pattern"
 
 type:      "optional"
 depends:   [optional]
